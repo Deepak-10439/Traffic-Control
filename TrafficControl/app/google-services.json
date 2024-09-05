@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "109232587815",
+    "project_id": "trafficmanagement-edd01",
+    "storage_bucket": "trafficmanagement-edd01.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:109232587815:android:da0a263c63860faca43a02",
+        "android_client_info": {
+          "package_name": "com.example.videoplayer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKhOkVK6NyF2FpmQWxpU_IHNzeRZ6V5gU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
