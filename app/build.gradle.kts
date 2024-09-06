@@ -91,8 +91,10 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation (libs.osmdroid.android)
     implementation (libs.kotlinx.coroutines.core)
-    implementation (libs.here.sdk.android)
-    implementation (libs.osmdroid.android.v6111)
+    implementation ("com.google.code.gson:gson:2.8.7")
+
+//    implementation (libs.here.sdk.android)
+//    implementation (libs.osmdroid.android.v6111)
 //    implementation (libs.okhttp.v500alpha2)
 //    implementation(libs.ktor.server.netty) // Ktor Netty server engine
 //    implementation(libs.ktor.server.core)  // Ktor core server
