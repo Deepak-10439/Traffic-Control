@@ -1,41 +1,29 @@
 package com.example.videoplayer.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import android.annotation.SuppressLint
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.*
+import org.json.JSONObject
+import java.io.IOException
 
 enum class TrafficDirection {
     NONE, NORTH, SOUTH, EAST, WEST, NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST
@@ -46,144 +34,194 @@ data class CameraDataLink(
     var direction: TrafficDirection = TrafficDirection.NONE
 )
 
+@SuppressLint("SetJavaScriptEnabled")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputScreen(navController: NavController) {
     var locationId by remember { mutableStateOf("") }
     var numCameras by remember { mutableStateOf("") }
     var cameraDataList by remember { mutableStateOf(List(6) { CameraDataLink() }) }
     var errorMessage by remember { mutableStateOf("") }
+    var mapHtml by remember { mutableStateOf(generateInitialOSMHtml()) }
+    var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
-    Box(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .padding(16.dp)
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) { 
-            item {
-                Text(
-                    text = "Input New Intersection Data",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color(0xFF2C3E50),
-                    modifier = Modifier.padding(bottom = 24.dp)
+        item {
+            Text(
+                text = "Find Traffic Lights",
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color(0xFF2C3E50),
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+
+            OutlinedTextField(
+                value = locationId,
+                onValueChange = { locationId = it },
+                label = { Text("Enter Location") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF3498DB),
+                    unfocusedBorderColor = Color(0xFFBDC3C7),
+                    focusedLabelColor = Color(0xFF3498DB),
+                    unfocusedLabelColor = Color(0xFF7F8C8D),
+                    cursorColor = Color(0xFF3498DB)
                 )
+            )
 
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FBFD))
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = numCameras,
-                            onValueChange = { value ->
-                                numCameras = value
-                                val num = value.toIntOrNull() ?: 0
-                                when {
-                                    num < 3 || num > 6-> {
-                                        errorMessage = "Only values from 3 to 6 are permitted"
-                                    }
-                                    else -> {
-                                        errorMessage = ""
-                                        cameraDataList = List(num) { index -> cameraDataList.getOrElse(index) { CameraDataLink() } }
-                                    }
-                                }
-                            },
-                            label = { Text("Number of Cameras") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.fillMaxWidth(),
-                            isError = errorMessage.isNotEmpty(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF3498DB),
-                                unfocusedBorderColor = Color(0xFFBDC3C7),
-                                focusedLabelColor = Color(0xFF3498DB),
-                                unfocusedLabelColor = Color(0xFF7F8C8D),
-                                cursorColor = Color(0xFF3498DB)
-                            )
-                        )
+            Spacer(modifier = Modifier.height(16.dp))
 
-                        if (errorMessage.isNotEmpty()) {
-                            Text(
-                                text = errorMessage,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        if (numCameras.toIntOrNull() in 3..6) {
-                            OutlinedTextField(
-                                value = locationId,
-                                onValueChange = { locationId = it },
-                                label = { Text("Location Name") },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFF3498DB),
-                                    unfocusedBorderColor = Color(0xFFBDC3C7),
-                                    focusedLabelColor = Color(0xFF3498DB),
-                                    unfocusedLabelColor = Color(0xFF7F8C8D),
-                                    cursorColor = Color(0xFF3498DB)
-                                )
-                            )
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        isLoading = true
+                        errorMessage = ""
+                        try {
+                            val result = fetchTrafficLights(locationId)
+                            if (result != null) {
+                                mapHtml = generateOSMHtml(locationId, result)
+                            } else {
+                                errorMessage = "No traffic lights found for this location."
+                            }
+                        } catch (e: Exception) {
+                            errorMessage = "Error: ${e.localizedMessage}"
+                        } finally {
+                            isLoading = false
                         }
                     }
-                }
-            }
-
-            if (numCameras.toIntOrNull() in 3..6) {
-                items(numCameras.toInt()) { index ->
-                    CameraInputGroup(
-                        index = index,
-                        cameraDatalink = cameraDataList[index],
-                        onCameraDataChange = { updatedCameraData ->
-                            cameraDataList = cameraDataList.toMutableList().also { it[index] = updatedCameraData }
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
-            item { 
-                Spacer(modifier = Modifier.height(20.dp))
-            }
-            item {
-                Button(
-                    onClick = {
-                        // Show success Toast message
-                        Toast.makeText(context, "New data submitted successfully", Toast.LENGTH_SHORT).show()
-                        // Reset form
-                        locationId = ""
-                        numCameras = ""
-                        cameraDataList = List(6) { CameraDataLink() }
-                        // Navigate to view dashboard
-                        navController.navigate(TrafficScreen.HomeScreen.name)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3498DB)),
-                    enabled = numCameras.toIntOrNull() in 3..6 &&
-                            locationId.isNotEmpty() &&
-                            cameraDataList.take(numCameras.toInt()).all { 
-                                it.link.isNotEmpty() && it.direction != TrafficDirection.NONE 
-                            }
-                ) {
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3498DB)),
+                enabled = locationId.isNotEmpty() && !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(color = Color.White)
+                } else {
                     Text(
-                        text = "Submit New Data",
+                        text = "Search",
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
+            }
+
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // OSM WebView
+            AndroidView(
+                factory = { context ->
+                    WebView(context).apply {
+                        settings.javaScriptEnabled = true
+                        settings.domStorageEnabled = true
+                        webViewClient = WebViewClient()
+                        loadDataWithBaseURL(null, mapHtml, "text/html", "UTF-8", null)
+                    }
+                },
+                update = { webView ->
+                    webView.loadDataWithBaseURL(null, mapHtml, "text/html", "UTF-8", null)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = numCameras,
+                onValueChange = { value ->
+                    numCameras = value
+                    val num = value.toIntOrNull() ?: 0
+                    when {
+                        num < 3 || num > 6 -> {
+                            errorMessage = "Only values from 3 to 6 are permitted"
+                        }
+                        else -> {
+                            errorMessage = ""
+                            cameraDataList = List(num) { index -> cameraDataList.getOrElse(index) { CameraDataLink() } }
+                        }
+                    }
+                },
+                label = { Text("Number of Cameras") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                isError = errorMessage.isNotEmpty(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF3498DB),
+                    unfocusedBorderColor = Color(0xFFBDC3C7),
+                    focusedLabelColor = Color(0xFF3498DB),
+                    unfocusedLabelColor = Color(0xFF7F8C8D),
+                    cursorColor = Color(0xFF3498DB)
+                )
+            )
+
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                )
+            }
+        }
+
+        if (numCameras.toIntOrNull() in 3..6) {
+            items(numCameras.toInt()) { index ->
+                CameraInputGroup(
+                    index = index,
+                    cameraDatalink = cameraDataList[index],
+                    onCameraDataChange = { updatedCameraData ->
+                        cameraDataList = cameraDataList.toMutableList().also { it[index] = updatedCameraData }
+                    }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Button(
+                onClick = {
+                    Toast.makeText(context, "New data submitted successfully", Toast.LENGTH_SHORT).show()
+                    locationId = ""
+                    numCameras = ""
+                    cameraDataList = List(6) { CameraDataLink() }
+                    mapHtml = generateInitialOSMHtml()
+                    navController.navigate(TrafficScreen.HomeScreen.name)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3498DB)),
+                enabled = numCameras.toIntOrNull() in 3..6 &&
+                        locationId.isNotEmpty() &&
+                        cameraDataList.take(numCameras.toInt()).all {
+                            it.link.isNotEmpty() && it.direction != TrafficDirection.NONE
+                        }
+            ) {
+                Text(
+                    text = "Submit New Data",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -212,7 +250,7 @@ fun CameraInputGroup(
                 color = Color(0xFF2C3E50),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            
+
             OutlinedTextField(
                 value = cameraDatalink.link,
                 onValueChange = { onCameraDataChange(cameraDatalink.copy(link = it)) },
@@ -226,23 +264,20 @@ fun CameraInputGroup(
                     cursorColor = Color(0xFF3498DB)
                 )
             )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             ExposedDropdownMenuBox(
                 expanded = expanded,
-                onExpandedChange = { expanded = !expanded },
-                modifier = Modifier.fillMaxWidth()
+                onExpandedChange = { expanded = !expanded }
             ) {
                 OutlinedTextField(
-                    value = if (cameraDatalink.direction == TrafficDirection.NONE) "Select" else cameraDatalink.direction.name,
-                    onValueChange = { },
+                    value = cameraDatalink.direction.name,
+                    onValueChange = {},
                     readOnly = true,
-                    label = { Text(text = "Traffic Direction") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth(),
+                    label = { Text("Traffic Direction") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF3498DB),
                         unfocusedBorderColor = Color(0xFFBDC3C7),
@@ -251,21 +286,106 @@ fun CameraInputGroup(
                         cursorColor = Color(0xFF3498DB)
                     )
                 )
+
                 ExposedDropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-                    TrafficDirection.entries.filter { it != TrafficDirection.NONE }.forEach { direction ->
+                    TrafficDirection.values().forEach { direction ->
                         DropdownMenuItem(
                             text = { Text(direction.name) },
                             onClick = {
-                                onCameraDataChange(cameraDatalink.copy(direction = direction))
                                 expanded = false
+                                onCameraDataChange(cameraDatalink.copy(direction = direction))
                             }
                         )
                     }
                 }
             }
+        }
+    }
+}
+
+fun generateInitialOSMHtml(): String {
+    return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>OSM Map</title>
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+            <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+            <style>
+                #map { height: 400px; width: 100%; }
+            </style>
+        </head>
+        <body>
+            <div id="map"></div>
+            <script>
+                var map = L.map('map').setView([20.5937, 78.9629], 5); // Default to India
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
+            </script>
+        </body>
+        </html>
+    """.trimIndent()
+}
+
+fun generateOSMHtml(location: String, coordinates: List<Pair<Double, Double>>): String {
+    val markersScript = coordinates.joinToString("\n") { (lat, lon) ->
+        "L.marker([$lat, $lon]).addTo(map);"
+    }
+
+    return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>OSM Map</title>
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+            <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+            <style>
+                #map { height: 400px; width: 100%; }
+            </style>
+        </head>
+        <body>
+            <div id="map"></div>
+            <script>
+                var map = L.map('map').setView([${coordinates[0].first}, ${coordinates[0].second}], 14); // Center on first coordinate
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
+
+                $markersScript
+            </script>
+        </body>
+        </html>
+    """.trimIndent()
+}
+
+suspend fun fetchTrafficLights(location: String): List<Pair<Double, Double>>? {
+    val client = OkHttpClient()
+    val request = Request.Builder()
+        .url("https://api.yourserver.com/traffic-lights?location=$location")
+        .build()
+
+    return withContext(Dispatchers.IO) {
+        try {
+            val response = client.newCall(request).execute()
+            val jsonData = response.body?.string() ?: return@withContext null
+            val jsonObject = JSONObject(jsonData)
+            val jsonArray = jsonObject.getJSONArray("trafficLights")
+            List(jsonArray.length()) {
+                val obj = jsonArray.getJSONObject(it)
+                obj.getDouble("latitude") to obj.getDouble("longitude")
+            }
+        } catch (e: IOException) {
+            null
         }
     }
 }

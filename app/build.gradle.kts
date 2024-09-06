@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id("kotlin-kapt")
     id("com.google.gms.google-services")
+//    kotlin("jvm") version "1.9.0"
+//    id("io.ktor.plugin") version "2.3.3"
 }
 
 android {
@@ -63,6 +65,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.vision.internal.vkp)
+    implementation(libs.play.services.maps)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,12 +74,12 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation (libs.androidx.media3.exoplayer)
-    implementation (libs.androidx.media3.ui)
-
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.exoplayer.v141)
     //Dagger - Hilt
     implementation(libs.hilt.android)
-    kapt (libs.dagger.hilt.android.compiler)
+    kapt(libs.dagger.hilt.android.compiler)
     kapt(libs.androidx.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
@@ -84,5 +87,21 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation (libs.osmdroid.android)
+    implementation (libs.kotlinx.coroutines.core)
+    implementation (libs.here.sdk.android)
+    implementation (libs.osmdroid.android.v6111)
+//    implementation (libs.okhttp.v500alpha2)
+//    implementation(libs.ktor.server.netty) // Ktor Netty server engine
+//    implementation(libs.ktor.server.core)  // Ktor core server
+//    implementation(libs.ktor.server.html.builder) // For generating HTML using Kotlin DSL
+//    implementation(libs.ktor.server.content.negotiation) // Content negotiation for JSON
+//    implementation(libs.ktor.serialization.jackson) // Jackson for JSON serialization
+//    implementation(libs.ktor.client.cio) // HTTP client engine for making API requests
+//    implementation(libs.kotlinx.serialization.json) // Kotlinx Serialization for handling JSON
+//    implementation(libs.ktor.client.serialization) // Client JSON serialization
+//    implementation(libs.json) // JSON parsing
 }
 

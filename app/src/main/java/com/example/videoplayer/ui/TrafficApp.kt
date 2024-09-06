@@ -26,7 +26,7 @@ fun TrafficApp(
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = TrafficScreen.RoleSelection.name
+        startDestination = TrafficScreen.InputScreen.name
     ) {
         composable(route = TrafficScreen.HomeScreen.name) {
             HomeScreen(
