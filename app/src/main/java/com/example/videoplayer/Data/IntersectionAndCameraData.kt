@@ -1,6 +1,6 @@
 package com.example.videoplayer.Data
 
-import com.example.videoplayer.ui.CameraData
+import com.example.videoplayer.ui.Admin.CameraData
 
 data class IntersectionData(
     val address: String,

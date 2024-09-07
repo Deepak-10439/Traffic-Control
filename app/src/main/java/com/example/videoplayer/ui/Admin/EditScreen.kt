@@ -1,4 +1,4 @@
-package com.example.videoplayer.ui
+package com.example.videoplayer.ui.Admin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
+import com.example.videoplayer.ui.TrafficScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

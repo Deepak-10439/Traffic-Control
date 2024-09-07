@@ -1,4 +1,4 @@
-package com.example.videoplayer.ui
+package com.example.videoplayer.ui.Admin
 
 import android.annotation.SuppressLint
 import android.webkit.JavascriptInterface
@@ -21,6 +21,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import com.example.videoplayer.ui.TrafficScreen
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -76,7 +77,7 @@ fun InputScreen(navController: NavController) {
     var numCameras by remember { mutableStateOf("") }
     var cameraDataList by remember { mutableStateOf(List(6) { CameraDataLink() }) }
     var errorMessage by remember { mutableStateOf("") }
-    var mapHtml by remember { mutableStateOf(generateInitialOSMHtml()) }
+    var mapHtml by remember { mutableStateOf(generateInitialOSMHtml(450)) }
     var isLoading by remember { mutableStateOf(false) }
     var markerResponse by remember { mutableStateOf<OverpassApiResponse?>(null) }
     var latitude by remember { mutableStateOf("") }
@@ -180,7 +181,7 @@ fun InputScreen(navController: NavController) {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(400.dp)
+                    .fillMaxHeight()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -282,7 +283,7 @@ fun InputScreen(navController: NavController) {
                         locationId = ""
                         numCameras = ""
                         cameraDataList = List(6) { CameraDataLink() }
-                        mapHtml = generateInitialOSMHtml()
+                        mapHtml = generateInitialOSMHtml(450)
                         navController.navigate(TrafficScreen.HomeScreen.name)
                     },
                     modifier = Modifier
@@ -388,7 +389,7 @@ fun CameraInputGroup(
     }
 }
 
-fun generateInitialOSMHtml(): String {
+fun generateInitialOSMHtml(height: Int): String {
     return """
         <!DOCTYPE html>
         <html>
@@ -399,7 +400,7 @@ fun generateInitialOSMHtml(): String {
             <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
             <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
             <style>
-                #map { height: 400px; width: 100%; }
+                #map { height: ${height}px; width: 100%; }
             </style>
         </head>
         <body>

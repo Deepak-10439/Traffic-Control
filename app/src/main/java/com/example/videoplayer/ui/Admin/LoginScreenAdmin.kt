@@ -1,9 +1,8 @@
-package com.example.videoplayer.ui
+package com.example.videoplayer.ui.Admin
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,10 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
@@ -34,23 +30,20 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.videoplayer.R
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
+import com.example.videoplayer.ui.TrafficScreen
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun SignUpScreen(navController: NavController) {
-    val firstName = remember { mutableStateOf("") }
-    val lastName = remember { mutableStateOf("") }
+fun LoginScreenAdmin(navController: NavController, onLoginSuccess: () -> Unit) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
+    val auth = FirebaseAuth.getInstance()
 
     Box(
         modifier = Modifier
@@ -80,55 +73,23 @@ fun SignUpScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Create Account",
+                text = "Welcome Back Admin",
                 color = Color(0xFF2C3E50),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = "Sign up to get started",
+                text = "Login to your account",
                 color = Color(0xFF7F8C8D),
                 fontSize = 16.sp,
                 modifier = Modifier.padding(top = 8.dp, bottom = 32.dp)
             )
 
             OutlinedTextField(
-                value = firstName.value,
-                onValueChange = { firstName.value = it },
-                label = { Text("First Name") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF3498DB),
-                    unfocusedBorderColor = Color(0xFFBDC3C7),
-                    focusedLabelColor = Color(0xFF3498DB),
-                    unfocusedLabelColor = Color(0xFF7F8C8D),
-                    cursorColor = Color(0xFF3498DB)
-                )
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = lastName.value,
-                onValueChange = { lastName.value = it },
-                label = { Text("Last Name") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF3498DB),
-                    unfocusedBorderColor = Color(0xFFBDC3C7),
-                    focusedLabelColor = Color(0xFF3498DB),
-                    unfocusedLabelColor = Color(0xFF7F8C8D),
-                    cursorColor = Color(0xFF3498DB)
-                )
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
                 value = email.value,
                 onValueChange = { email.value = it },
-                label = { Text("Email/Mobile Number") },
+                label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF3498DB),
@@ -156,24 +117,38 @@ fun SignUpScreen(navController: NavController) {
                 )
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { CreateUserAccount(firstName.value, lastName.value, email.value, password.value, navController) },
+                onClick = {
+                    loginEmailPassUser(email.value, password.value, navController, auth)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3498DB))
             ) {
                 Text(
-                    text = "Create Account",
+                    text = "Login",
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(
+                onClick = { /* Handle forgot password action */ }
+            ) {
+                Text(
+                    text = "Forgot Password?",
+                    color = Color(0xFF3498DB),
+                    fontSize = 16.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -181,15 +156,15 @@ fun SignUpScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Already have an account?",
+                    text = "Don't have an account?",
                     color = Color(0xFF7F8C8D),
                     fontSize = 16.sp
                 )
                 TextButton(
-                    onClick = { navController.navigate(TrafficScreen.RoleSelection.name) }
+                    onClick = { navController.navigate("signup") }
                 ) {
                     Text(
-                        text = "Log In",
+                        text = "Sign Up",
                         color = Color(0xFF3498DB),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
@@ -199,58 +174,19 @@ fun SignUpScreen(navController: NavController) {
         }
     }
 }
-//
-//@Composable
-//fun CustomTextField(
-//    value: String,
-//    onValueChange: (String) -> Unit,
-//    hint: String,
-//    isPassword: Boolean = false
-//) {
-//    Box(
-//        modifier = Modifier
-//            .widthIn(250.dp, 311.dp)
-//            .height(48.dp)
-//            .background(Color.Transparent, shape = AppShapes.small)
-//            .padding(0.dp)
-//    ) {
-//        BasicTextField(
-//            value = value,
-//            onValueChange = onValueChange,
-//            modifier = Modifier.fillMaxSize(),
-//            textStyle = TextStyle(color = Color.White),
-//            decorationBox = { innerTextField ->
-//                Box(
-//                    contentAlignment = Alignment.CenterStart,
-//                    modifier = Modifier
-//                        .background(Color.Transparent, shape = AppShapes.small)
-//                        .border(2.dp, Color.White, shape = AppShapes.large)
-//                        .padding(start = 20.dp)
-//                        .fillMaxSize()
-//                ) {
-//                    if (value.isEmpty()) {
-//                        Text(text = hint, color = Color.White.copy(alpha = 1.0f))
-//                    }
-//                    innerTextField()
-//                }
-//            },
-//            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
-//        )
-//    }
-//}
 
-fun CreateUserAccount(firstName: String, lastName: String, email: String, password: String, navController: NavController) {
-    if (firstName.isNotEmpty() && lastName.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()) {
-        val auth = Firebase.auth
-        auth.createUserWithEmailAndPassword(email, password)
+fun loginEmailPassUser(email: String, password: String, navController: NavController, auth: FirebaseAuth) {
+    if (email.isNotEmpty() && password.isNotEmpty()) {
+        auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener { authResult ->
-                Toast.makeText(navController.context, "Account Created Successfully", Toast.LENGTH_LONG).show()
-                navController.navigate(TrafficScreen.RoleSelection.name) // Navigate to login screen
+                // Retrieve user role or any other necessary data here if needed
+                navController.navigate(TrafficScreen.IntersectionDetails.name) // Navigate to IntersectionDetails screen
             }
             .addOnFailureListener { exception ->
-                Toast.makeText(navController.context, "Error: ${exception.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(navController.context, "Authentication failed: ${exception.message}", Toast.LENGTH_LONG).show()
             }
     } else {
-        Toast.makeText(navController.context, "All fields must be filled", Toast.LENGTH_SHORT).show()
+        Toast.makeText(navController.context, "Email and Password must not be empty", Toast.LENGTH_SHORT).show()
     }
 }
+

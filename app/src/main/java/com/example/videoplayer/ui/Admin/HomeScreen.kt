@@ -1,4 +1,4 @@
-package com.example.videoplayer.ui
+package com.example.videoplayer.ui.Admin
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.videoplayer.R
-import com.google.android.libraries.intelligence.acceleration.Analytics
+import com.example.videoplayer.ui.TrafficScreen
 
 data class DashboardItem(
     val icon: ImageVector,
@@ -169,9 +169,12 @@ fun HomeContent(paddingValues: PaddingValues, navController: NavController, user
         item { WelcomeHeader(userName) }
 
         val dashboardItems = listOf(
-            DashboardItem(Icons.Default.List, "View Traffic Data", "Access real-time traffic information and analytics") { navController.navigate(TrafficScreen.IntersectionDetails.name) },
-            DashboardItem(Icons.Default.Edit, "Input Traffic Data", "Update and manage traffic data entries") { navController.navigate(TrafficScreen.InputScreen.name) },
-            DashboardItem(Icons.Default.Settings, "Edit Traffic Settings", "Configure traffic management parameters") { navController.navigate(TrafficScreen.EditScreen.name) },
+            DashboardItem(Icons.Default.List, "View Traffic Data", "Access real-time traffic information and analytics") { navController.navigate(
+                TrafficScreen.IntersectionDetails.name) },
+            DashboardItem(Icons.Default.Edit, "Input Traffic Data", "Update and manage traffic data entries") { navController.navigate(
+                TrafficScreen.InputScreen.name) },
+            DashboardItem(Icons.Default.Settings, "Edit Traffic Settings", "Configure traffic management parameters") { navController.navigate(
+                TrafficScreen.EditScreen.name) },
         )
 
         items(dashboardItems) { item ->
