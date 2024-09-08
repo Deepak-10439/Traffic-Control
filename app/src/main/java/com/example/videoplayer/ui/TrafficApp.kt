@@ -40,7 +40,7 @@ fun TrafficApp(
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = TrafficScreen.HomeDriver.name
+        startDestination = TrafficScreen.RoleSelection.name
     ) {
         composable(route = TrafficScreen.HomeDriver.name) {
             // Get the FusedLocationProviderClient

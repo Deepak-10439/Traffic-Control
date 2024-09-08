@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.videoplayer.R
 import com.example.videoplayer.ui.Admin.loginEmailPassUser
+import com.example.videoplayer.ui.TrafficScreen
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -120,7 +121,7 @@ fun LoginScreenDriver(navController: NavController, onLoginSuccess: () -> Unit) 
 
             Button(
                 onClick = {
-                    loginEmailPassUser(email.value, password.value, navController, auth)
+                    loginEmailPassUser(email.value, password.value, navController, auth, TrafficScreen.HomeDriver.name)
                 },
                 modifier = Modifier
                     .fillMaxWidth()

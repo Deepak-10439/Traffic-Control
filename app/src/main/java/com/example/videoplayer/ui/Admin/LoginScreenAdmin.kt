@@ -121,7 +121,7 @@ fun LoginScreenAdmin(navController: NavController, onLoginSuccess: () -> Unit) {
 
             Button(
                 onClick = {
-                    loginEmailPassUser(email.value, password.value, navController, auth)
+                    loginEmailPassUser(email.value, password.value, navController, auth, TrafficScreen.HomeScreen.name)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -175,12 +175,18 @@ fun LoginScreenAdmin(navController: NavController, onLoginSuccess: () -> Unit) {
     }
 }
 
-fun loginEmailPassUser(email: String, password: String, navController: NavController, auth: FirebaseAuth) {
+fun loginEmailPassUser(
+    email: String,
+    password: String,
+    navController: NavController,
+    auth: FirebaseAuth,
+    destinationScreen: String
+) {
     if (email.isNotEmpty() && password.isNotEmpty()) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener { authResult ->
                 // Retrieve user role or any other necessary data here if needed
-                navController.navigate(TrafficScreen.HomeDriver.name) // Navigate to IntersectionDetails screen
+                navController.navigate(destinationScreen)
             }
             .addOnFailureListener { exception ->
                 Toast.makeText(navController.context, "Authentication failed: ${exception.message}", Toast.LENGTH_LONG).show()
@@ -189,4 +195,3 @@ fun loginEmailPassUser(email: String, password: String, navController: NavContro
         Toast.makeText(navController.context, "Email and Password must not be empty", Toast.LENGTH_SHORT).show()
     }
 }
-
