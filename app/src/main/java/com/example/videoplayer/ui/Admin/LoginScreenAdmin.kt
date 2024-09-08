@@ -180,7 +180,7 @@ fun loginEmailPassUser(email: String, password: String, navController: NavContro
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener { authResult ->
                 // Retrieve user role or any other necessary data here if needed
-                navController.navigate(TrafficScreen.IntersectionDetails.name) // Navigate to IntersectionDetails screen
+                navController.navigate(TrafficScreen.HomeDriver.name) // Navigate to IntersectionDetails screen
             }
             .addOnFailureListener { exception ->
                 Toast.makeText(navController.context, "Authentication failed: ${exception.message}", Toast.LENGTH_LONG).show()
