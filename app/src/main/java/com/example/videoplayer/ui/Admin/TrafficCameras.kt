@@ -1,5 +1,6 @@
 package com.example.videoplayer.ui.Admin
 
+import android.annotation.SuppressLint
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -36,26 +37,31 @@ data class CameraData(
     val initialLight: String
 )
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun TrafficCamerasScreen(navController: NavController,cameras: List<CameraData>) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+    Scaffold(
+        topBar = { TopAppBar(navController = navController)}
     ) {
-        Text(
-            text = "Traffic Camera Feeds",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(start = 16.dp, end = 16.dp, top = 100.dp, bottom = 16.dp)
         ) {
-            items(cameras) { camera ->
-                CameraCard(camera)
+            Text(
+                text = "Traffic Camera Feeds",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(cameras) { camera ->
+                    CameraCard(camera)
+                }
             }
         }
     }

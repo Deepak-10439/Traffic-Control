@@ -32,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,6 +57,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.videoplayer.R
 import com.example.videoplayer.ui.Admin.OverpassApiResponse
+import com.example.videoplayer.ui.Admin.TopAppBar
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
@@ -76,7 +78,9 @@ import java.io.IOException
 import java.net.URLEncoder
 
 @OptIn(UnstableApi::class)
-@SuppressLint("SetJavaScriptEnabled", "MissingPermission", "JavascriptInterface")
+@SuppressLint("SetJavaScriptEnabled", "MissingPermission", "JavascriptInterface",
+    "UnusedMaterial3ScaffoldPaddingParameter"
+)
 @Composable
 fun HomeDriver(navController: NavController, locationProvider: FusedLocationProviderClient) {
     val mapHtml by remember { mutableStateOf(generateInitialOSMHtml(1000)) }
@@ -152,128 +156,132 @@ fun HomeDriver(navController: NavController, locationProvider: FusedLocationProv
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Map
-        AndroidView(
-            factory = { context ->
-                WebView(context).apply {
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    webViewClient = WebViewClient()
-                    addJavascriptInterface(JSInterface { lat, lon ->
-                        // Update state with the coordinates received from JavaScript if needed
-                    }, "Android")
-                    loadDataWithBaseURL(null, mapHtml, "text/html", "UTF-8", null)
-                    webViewInstance = this
-                }
-            },
-            update = { webView ->
-                if (isLocationLoaded) {
-                    // Pass current latitude and longitude to the map when the location is ready
-                    webView.evaluateJavascript(
-                        """
-                        (function() {
-                            var map = L.map('map').setView([$latitude, $longitude], 12);
-                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                maxZoom: 18,
-                                attribution: '© OpenStreetMap'
-                            }).addTo(map);
-                            var marker = L.marker([$latitude, $longitude], {
-                                icon: L.icon({
-                                    iconUrl: '${iconUrl}',
-                                    iconSize: [38, 38],
-                                })
-                            }).addTo(map).bindPopup('You are here').openPopup();
-                            
-                            window.map = map; // Make map accessible globally
-                        })();
-                        """.trimIndent(),
-                        null
-                    )
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
-
-        // Overlay content
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Input card at the top
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .animateContentSize(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White.copy(alpha = 0.9f)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        "Calculate Your Route",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = Color(0xFF3498DB),
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    AnimatedLocationField(
-                        value = startLocation,
-                        onValueChange = { startLocation = it },
-                        label = "Start Location",
-                        icon = Icons.Default.LocationOn
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    AnimatedLocationField(
-                        value = destination,
-                        onValueChange = { destination = it },
-                        label = "Destination",
-                        icon = Icons.Default.Place
-                    )
-                }
-            }
-
-            // Spacer to push the button to the bottom
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Calculate Route button at the bottom
-            Button(
-                onClick = { calculateRoute() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(28.dp)),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3498DB)),
-                shape = RoundedCornerShape(28.dp)
-            ) {
-                Text("Calculate Route", color = Color.White)
-            }
-        }
-
-        // Current location icon
-        IconButton(
-            onClick = { /* Handle current location click */ },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 88.dp) // Adjust padding as needed
-                .size(48.dp)
-                .shadow(elevation = 4.dp, shape = CircleShape)
-                .background(Color.White, CircleShape)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.google_maps_current_location_icon_2),
-                contentDescription = "Current Location",
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Fit
+    Scaffold(
+        topBar = { TopAppBar(navController = navController)}
+    ){
+        Box(modifier = Modifier.fillMaxSize().padding(top = 70.dp)) {
+            // Map
+            AndroidView(
+                factory = { context ->
+                    WebView(context).apply {
+                        settings.javaScriptEnabled = true
+                        settings.domStorageEnabled = true
+                        webViewClient = WebViewClient()
+                        addJavascriptInterface(JSInterface { lat, lon ->
+                            // Update state with the coordinates received from JavaScript if needed
+                        }, "Android")
+                        loadDataWithBaseURL(null, mapHtml, "text/html", "UTF-8", null)
+                        webViewInstance = this
+                    }
+                },
+                update = { webView ->
+                    if (isLocationLoaded) {
+                        // Pass current latitude and longitude to the map when the location is ready
+                        webView.evaluateJavascript(
+                            """
+                         (function() {
+                             var map = L.map('map').setView([$latitude, $longitude], 12);
+                             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                 maxZoom: 18,
+                                 attribution: '© OpenStreetMap'
+                             }).addTo(map);
+                             var marker = L.marker([$latitude, $longitude], {
+                                 icon: L.icon({
+                                     iconUrl: '${iconUrl}',
+                                     iconSize: [38, 38],
+                                 })
+                             }).addTo(map).bindPopup('You are here').openPopup();
+                             
+                             window.map = map; // Make map accessible globally
+                         })();
+                         """.trimIndent(),
+                            null
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
             )
+
+            // Overlay content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 16.dp, end = 16.dp, top = 23.dp, bottom = 16.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Input card at the top
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White.copy(alpha = 0.9f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            "Calculate Your Route",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Color(0xFF3498DB),
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        AnimatedLocationField(
+                            value = startLocation,
+                            onValueChange = { startLocation = it },
+                            label = "Start Location",
+                            icon = Icons.Default.LocationOn
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        AnimatedLocationField(
+                            value = destination,
+                            onValueChange = { destination = it },
+                            label = "Destination",
+                            icon = Icons.Default.Place
+                        )
+                    }
+                }
+
+                // Spacer to push the button to the bottom
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Calculate Route button at the bottom
+                Button(
+                    onClick = { calculateRoute() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .shadow(elevation = 8.dp, shape = RoundedCornerShape(28.dp)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3498DB)),
+                    shape = RoundedCornerShape(28.dp)
+                ) {
+                    Text("Calculate Route", color = Color.White)
+                }
+            }
+
+            // Current location icon
+            IconButton(
+                onClick = { /* Handle current location click */ },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 88.dp) // Adjust padding as needed
+                    .size(48.dp)
+                    .shadow(elevation = 4.dp, shape = CircleShape)
+                    .background(Color.White, CircleShape)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.google_maps_current_location_icon_2),
+                    contentDescription = "Current Location",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Fit
+                )
+            }
         }
     }
 }

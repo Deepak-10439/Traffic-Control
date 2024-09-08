@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -18,6 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -31,15 +33,58 @@ data class DashboardItem(
     val onClick: () -> Unit
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
+//@Preview
+@Composable
+fun TopAppBar(
+    navController: NavController
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF3498DB))
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.emblem_logo),
+            contentDescription = "Government Logo",
+            modifier = Modifier
+                .size(60.dp)
+//                .clip(CircleShape)
+        )
+
+        Text(
+            text = "Smart Traffic Monitor",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 16.dp)
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = { navController.navigate(TrafficScreen.RoleSelection.name)},
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Text("Logout", color = Color(0xFF3498DB), fontSize = 14.sp)
+            }
+        }
+    }
+}
+
 @Composable
 fun HomeScreen(
     navController: NavController,
-    userName: String,
-    onProfileClick: () -> Unit
+    userName: String
 ) {
     Scaffold(
-        topBar = { HomeTopAppBar() },
+        topBar = { TopAppBar(navController = navController) },
         containerColor = Color(0xFFF5F7FA)
     ) { paddingValues ->
         HomeContent(paddingValues, navController, userName)
@@ -125,37 +170,37 @@ fun DashboardCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HomeTopAppBar() {
-    TopAppBar(
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.emblem_logo),
-                    contentDescription = "Logo",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Fit
-                )
-                Text(
-                    "Traffic Management",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        },
-        colors = TopAppBarDefaults.mediumTopAppBarColors(
-            containerColor = Color(0xFF3498DB),
-            titleContentColor = Color.White
-        ),
-        modifier = Modifier.height(64.dp)
-    )
-}
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun HomeTopAppBar() {
+//    TopAppBar(
+//        title = {
+//            Row(
+//                verticalAlignment = Alignment.CenterVertically,
+//                horizontalArrangement = Arrangement.spacedBy(12.dp)
+//            ) {
+//                Image(
+//                    painter = painterResource(id = R.drawable.emblem_logo),
+//                    contentDescription = "Logo",
+//                    modifier = Modifier
+//                        .size(40.dp)
+//                        .clip(RoundedCornerShape(8.dp)),
+//                    contentScale = ContentScale.Fit
+//                )
+//                Text(
+//                    "Traffic Management",
+//                    fontSize = 20.sp,
+//                    fontWeight = FontWeight.SemiBold
+//                )
+//            }
+//        },
+//        colors = TopAppBarDefaults.mediumTopAppBarColors(
+//            containerColor = Color(0xFF3498DB),
+//            titleContentColor = Color.White
+//        ),
+//        modifier = Modifier.height(64.dp)
+//    )
+//}
 
 @Composable
 fun HomeContent(paddingValues: PaddingValues, navController: NavController, userName: String) {
